@@ -42,7 +42,6 @@ def init_llm():
 
 #-----------------------------Helper--------------------------------
 async def getResponse(thisllm, user_input):
-
     print('Thinking...')
     return thisllm.chat(user_input)
 
@@ -50,7 +49,7 @@ async def mentioned_function(message):
     cleaned_message = re.sub(r'<@!?[0-9]+>', '', message.content).strip()
     response = f"Bot was mentioned! Message: {cleaned_message}"
     await message.channel.typing()
-    llmresponse = await getResponse(llm, response)
+    llmresponse = await getResponse(llm, cleaned_message)
     await message.channel.send(llmresponse)
 
 def shouldIgnore(message):
