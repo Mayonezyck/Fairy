@@ -7,7 +7,9 @@ def load_secret():
         secret = yaml.safe_load(f)
         return secret.get('DISCORD', default)
 
-
+intents = discord.Intents.default()
+intents.messages = True
+intents.message_content = True
 Discord_token = load_secret
 # Define the bot and its command prefix
 bot = commands.Bot(command_prefix='!')
