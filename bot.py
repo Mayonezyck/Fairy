@@ -1,17 +1,26 @@
 import yaml
 import discord
 import re
+import os
 from discord.ext import commands
+from llm.llm_factory import LLMFactory
 
 #Load Token from secret file
 def load_secret():
     with open("secret.yaml", "r") as f:
         secret = yaml.safe_load(f)
         return secret.get('DISCORD')
+def load_config():
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    config_path = os.path.join(dir_path, "conf.yaml")
+    with open(config_path, "r") as f:
+        return yaml.safe_load(f)
+def get_config(key, default=None):
+    return config.get(key, default)
 
-
+config = load_config()
 TOKEN = load_secret()
-TESTCHANNEL = 1260450089239838804
+
 # Intents are required to read messages
 intents = discord.Intents.default()
 intents.messages = True
@@ -21,16 +30,29 @@ intents.message_content = True
 
 # Creating bot instance with command prefix '!'
 bot = commands.Bot(command_prefix='!', intents=intents)
+#-----------------------------Init---------------------------------
+def init_llm():
+
+    llm_provider = get_config("LLM_PROVIDER")
+    llm_config = get_config(llm_provider, {})
+    system_prompt = get_config("SYSTEM_PROMPT")
+    llm = LLMFactory.create_llm(llm_provider=llm_provider, SYSTEM_PROMPT=system_prompt, **llm_config)
+    return llm
+
 
 #-----------------------------Helper--------------------------------
-# Define the function to be called when the bot is mentioned
+async def getResponse(thisllm, user_input):
+    print('Thinking...')
+    print(thisllm.chat(user_input))
+
 async def mentioned_function(message):
     cleaned_message = re.sub(r'<@!?[0-9]+>', '', message.content).strip()
     response = f"Bot was mentioned! Message: {cleaned_message}"
+    await getResponse(llm, user_input)
     await message.channel.send(response)
 
 def shouldIgnore(message):
-    if message.author == bot.user or message.channel.id != TESTCHANNEL:
+    if message.author == bot.user or message.channel.id != get_config("TESTCHANNEL"):
         return True
     return False
 
@@ -74,17 +96,7 @@ async def leave(ctx):
 async def help(message):
     await message.channel.send('?Someone did not write the help file yet')
 
-#----------ChatBot Connet-------
-class LLM_PIPE:
-    def __init__():
-        
-    def chat(prompt):
 
-        full_response = self._send_message_to_agent(
-            prompt, callback_function=print
-        )
-
-        return full_response
 
 #-----------------------------DEBUG ONLY----------------------------
 async def DEBUG_printMessageInfo(message):
@@ -95,4 +107,5 @@ async def DEBUG_printMessageInfo(message):
     await message.channel.send(ifMention)
 
 # Start the bot
+llm = init_llm()
 bot.run(TOKEN)
