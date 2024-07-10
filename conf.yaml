@@ -37,7 +37,7 @@ memgpt:
   ADMIN_TOKEN: "p0l@ndspr1ngest.1845"
 
   # The ID of the agent to send the message to.
-  AGENT_ID: "17a2d7b6-dc5a-40bc-87a7-393703760ebf"
+  AGENT_ID: "695144ad-7b5c-49bc-88be-bdb0455b3aea"
   VERBOSE: True
 
 
