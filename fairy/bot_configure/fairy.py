@@ -53,6 +53,9 @@ class Fairy(discord.Client):
             if cleaned_message[1:7] == 'enable':
                 self.enableFreeChat(message.channel)
                 return True
+            elif cleaned_message[1:8] == 'disable':
+                self.disableFreeChat()
+                return True
         return False
 
     async def on_ready(self):
@@ -135,7 +138,7 @@ class Fairy(discord.Client):
         #await DEBUG_printMessageInfo(message)
         if self.user.mentioned_in(message):
             await self.on_mentioned(message)
-        if self.freeChat and message.channel == self.freeChatChannel:
+        elif self.freeChat and message.channel == self.freeChatChannel:
             await self.chat(message)
 
         #await commands.Bot.process_commands(message)
