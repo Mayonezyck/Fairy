@@ -28,7 +28,7 @@ class TTSEngine(TTSInterface):
         if not os.path.exists(self.new_audio_dir):
             os.makedirs(self.new_audio_dir)
 
-    
+
     def speak_local(self, text, on_speak_start_callback=None, on_speak_end_callback=None):
         '''
         Speak the text locally on this device (not stream to some kind of live2d front end).
@@ -44,14 +44,19 @@ class TTSEngine(TTSInterface):
         filepath = self.generate_audio(text)
         if on_speak_start_callback is not None:
             on_speak_start_callback()
-        data, fs = sf.read(filepath, dtype='float32')  
+        data, fs = sf.read(filepath, dtype='float32')
         # Play audio locally with sounddevice
         sd.play(data, fs)
         # Wait for audio to finish playing
         sd.wait()
         if on_speak_end_callback is not None:
             on_speak_end_callback()
-        self.__remove_file(filepath)
+        #self.__remove_file(filepath)
+        if os.path.exists(filepath):
+            os.remove(filepath)
+            print(f"File {filepath} removed successfully.")
+        else:
+            print(f"File {filepath} does not exist.")
 
 
     def generate_audio(self, text, file_name_no_ext=None):
@@ -62,25 +67,26 @@ class TTSEngine(TTSInterface):
         file_name_no_ext: str
             name of the file without extension
 
-        
+
         Returns:
         str: the path to the generated audio file
-        
+
         '''
         file_name = "temp"
         if file_name_no_ext is None:
             file_name = self.temp_audio_file
         else:
             file_name = file_name_no_ext
-        
-        file_name = str(Path(self.new_audio_dir) / f"{file_name}.{self.file_extension}")
 
+        file_name = str(Path(self.new_audio_dir) / f"{file_name}.{self.file_extension}")
+        print(text)
+        print(type(text))
         communicate = edge_tts.Communicate(text, self.voice)
         communicate.save_sync(file_name)
 
         return file_name
 
-    
+
 
 if __name__ == "__main__":
     tts = TTSEngine()

@@ -71,7 +71,7 @@ class LLM(LLMInterface):
         return full_response
 
     def chat_stream_audio(
-        self, prompt, generate_audio_file=None, stream_audio_file=None
+        self, channel, prompt, generate_audio_file=None, stream_audio_file=None
     ):
         """
         Call the llm with text, print the result, and stream the audio to the frontend if the generate_audio_file and stream_audio_file functions are provided.
@@ -100,6 +100,7 @@ class LLM(LLMInterface):
 
                 if callable(generate_audio_file):
                     print("\n")
+                    
                     file_path = generate_audio_file(
                         sentence, file_name_no_ext=f"temp-{index}"
                     )
@@ -109,7 +110,7 @@ class LLM(LLMInterface):
                         last_stream_future.result()
                     # stream the audio file to the frontend
                     last_stream_future = executor.submit(
-                        stream_audio_file, sentence, filename=file_path
+                        stream_audio_file, channel, sentence, filename=file_path
                     )
                     index += 1
 
@@ -186,7 +187,6 @@ class LLM(LLMInterface):
                         print(f"Error decoding JSON: {e} for line: {decoded_line}")
                 else:
                     print("Received an empty line or non-JSON data.")
-
         return result
 
 

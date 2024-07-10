@@ -4,7 +4,7 @@ import os
 import importlib
 import yaml
 
-
+os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 from live2d import Live2dController
 from tts.tts_factory import TTSFactory
 from llm.llm_factory import LLMFactory
@@ -68,9 +68,9 @@ def init_speech_services():
 
     if voice_input_on:
         asr_model = get_config("STT_MODEL")
-        
+
         asr_config = {}
-        
+
         if asr_model == "AzureSTT":
             import api_keys
             asr_config = {
@@ -78,14 +78,14 @@ def init_speech_services():
                 "subscription_key": api_keys.AZURE_API_Key,
                 "region": api_keys.AZURE_REGION,
             }
-        else: 
+        else:
             asr_config = get_config(asr_model, {})
-        
+
         speech2text = ASRFactory.get_asr_system(asr_model, **asr_config)
 
     if tts_on:
         tts_model = get_config("TTS_MODEL", "pyttsx3TTS")
-        
+
         if tts_model == "AzureTTS":
             import api_keys
             tts_config = {
@@ -93,7 +93,7 @@ def init_speech_services():
                 "region": api_keys.AZURE_REGION,
                 "voice": api_keys.AZURE_VOICE,
             }
-        else: 
+        else:
             tts_config = get_config(tts_model, {})
 
         tts = TTSFactory.get_tts_engine(tts_model, **tts_config)
