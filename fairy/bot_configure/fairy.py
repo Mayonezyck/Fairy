@@ -39,6 +39,9 @@ class Fairy(discord.Client):
             return True
         if ctx.channel != self.freeChatChannel and ctx.channel.id != self.testchannel:
             return True
+        if not self.checkTextOnly(ctx):
+            print('This message is not supported')
+            return True
         return False
 
 
@@ -46,7 +49,7 @@ class Fairy(discord.Client):
         self.temp = None
         self.isThinking = False
 
-    def checkCommand(self, message):
+    async def checkCommand(self, message):
         cleaned_message = re.sub(r'<@!?[0-9]+>', '', message.content).strip()
         if(cleaned_message[0] == '!'):
             print(cleaned_message[1:7])
@@ -56,7 +59,16 @@ class Fairy(discord.Client):
             elif cleaned_message[1:8] == 'disable':
                 self.disableFreeChat()
                 return True
+            elif cleaned_message[1:5] == 'join':
+                await voice_channel.join(message)
+                return
         return False
+
+    def checkTextOnly(self, message):
+        if message.attachments or message.embeds or message.stickers:
+            return False
+        else:
+            return True
 
     async def on_ready(self):
         print(f'Logged in as {self.user} (ID: {self.user.id})')
@@ -121,7 +133,7 @@ class Fairy(discord.Client):
             await self.typeToOutput(message)
 
     async def on_mentioned(self, message):
-        if not self.checkCommand(message):
+        if not await self.checkCommand(message):
             await self.chat(message)
 
                 # if In_Voice:
