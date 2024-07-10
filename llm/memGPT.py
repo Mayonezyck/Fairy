@@ -63,7 +63,6 @@ class LLM(LLMInterface):
         Returns:
         - str: The full response from the agent.
         """
-
         full_response = self._send_message_to_agent(
             prompt, callback_function=print
         )
@@ -100,7 +99,7 @@ class LLM(LLMInterface):
 
                 if callable(generate_audio_file):
                     print("\n")
-                    
+
                     file_path = generate_audio_file(
                         sentence, file_name_no_ext=f"temp-{index}"
                     )

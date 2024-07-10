@@ -2,11 +2,11 @@ import yaml
 import discord
 import re
 import os
-from discord.ext import commands
-from llm.llm_factory import LLMFactory
-from tts.tts_factory import TTSFactory
-from asr.asr_factory import ASRFactory
-from tts import stream_audio
+
+
+from fairy.bot_configure import fairy
+from fairy.bot_commands import voice_channel
+
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 #Load Token from secret file
 def load_secret():
@@ -25,24 +25,21 @@ config = load_config()
 TOKEN = load_secret()
 
 # Intents are required to read messages
-intents = discord.Intents.default()
-intents.messages = True
-intents.message_content = True
+
 In_Voice = True
 live2d = None
 
 # Creating bot instance with command prefix '!'
-bot = commands.Bot(command_prefix='!', intents=intents)
+#bot = commands.Bot(command_prefix='!', intents=intents)
 #-----------------------------Init---------------------------------
-def init_llm():
 
-    llm_provider = get_config("LLM_PROVIDER")
-    llm_config = get_config(llm_provider, {})
-    system_prompt = get_config("SYSTEM_PROMPT")
-    llm = LLMFactory.create_llm(llm_provider=llm_provider, SYSTEM_PROMPT=system_prompt, **llm_config)
-    return llm
 
-def init_speech_services():
+
+
+
+
+
+'''def init_speech_services():
     voice_input_on = get_config("VOICE_INPUT_ON", False)
     tts_on = get_config("TTS_ON", False)
     speech2text, tts = None, None
@@ -79,83 +76,7 @@ def init_speech_services():
 
         tts = TTSFactory.get_tts_engine(tts_model, **tts_config)
 
-    return speech2text, tts
-#-----------------------------Voice--------------------------------
-async def speak_local(voice_channel, text, on_speak_start_callback=None, on_speak_end_callback=None):
-    filepath = self.generate_audio(text)
-    voice_channel = await voice_channel.connect()
-    voice_channel.play(discord.FFmpegPCMAudio(executable="ffmpeg.exe", source=filepath))
-    #self.__remove_file(filepath)
-    while voice_channel.is_playing():
-        sleep(.1)
-    if os.path.exists(filepath):
-        os.remove(filepath)
-        print(f"File {filepath} removed successfully.")
-    else:
-        print(f"File {filepath} does not exist.")
-
-def generate_audio_file(sentence, file_name_no_ext):
-    """
-    Generate audio file from the given sentence.
-    sentence: str
-        the sentence to generate audio from
-    file_name_no_ext: str
-        name of the file without extension
-
-        Returns:
-        str: the path to the generated audio file.
-        None if TTS is off or the sentence is empty.
-
-    """
-
-    print("generate...")
-
-    if not get_config("TTS_ON", False):
-        return None
-
-    if live2d:
-        sentence = live2d.remove_expression_from_string(sentence)
-
-    if sentence.strip() == "":
-        return None
-
-    return tts.generate_audio(sentence, file_name_no_ext=file_name_no_ext)
-
-def stream_audio_file(vc, sentence, filename):
-    """
-    Stream the audio file to the frontend and wait for the audio to finish. The audio and the data to control the mouth movement will be sent to the live2d frontend.
-
-    sentence: str
-        the sentence to speak
-    filename: str
-        the path of the audio file to stream
-    """
-    print("stream...")
-
-    if not live2d:
-        tts.speak_local(vc, sentence)
-        return
-
-    expression_list = live2d.get_expression_list(sentence)
-
-    if live2d.remove_expression_from_string(sentence).strip() == "":
-        live2d.send_expressions_str(sentence, send_delay=0)
-        live2d.send_text(sentence)
-        return
-
-
-    stream_audio.StreamAudio(
-        filename,
-        display_text=sentence,
-        expression_list=expression_list,
-        base_url=live2d.base_url,
-    ).send_audio_with_volume(wait_for_audio=True)
-
-    if os.path.exists(filename):
-        os.remove(filename)
-        print(f"File {filename} removed successfully.")
-    else:
-        print(f"File {filename} does not exist.")
+    return speech2text, tts'''
 
 #-----------------------------Helper--------------------------------
 async def getResponse(thisllm, user_input):
@@ -186,52 +107,21 @@ async def mentioned_function(message):
         llmresponse = await getResponse(llm, cleaned_message)
         await message.channel.send(llmresponse)
 
-def shouldIgnore(message):
-    if message.author == bot.user or message.channel.id != get_config("TESTCHANNEL"):
-        return True
-    return False
+
 
 #------------------------------Tested Events-----------------------
 # Event that triggers when the bot is ready
-@bot.event
-async def on_ready():
-    print(f'Bot is ready. Logged in as {bot.user}')
-
-# Event that triggers on new message
-@bot.event
-async def on_message(message):
-    if shouldIgnore(message):return
-    #await DEBUG_printMessageInfo(message)
-    if bot.user.mentioned_in(message):
-        await mentioned_function(message)
-    await bot.process_commands(message)
 
 #-----------------------------Tested Commands----------------------
-#join voice channel
+'''
 @bot.command()
-async def join(ctx):
-    if ctx.author.voice:
-        channel = ctx.author.voice.channel
-        In_Voice = True
-        await channel.connect()
-        await ctx.send(f'Joined {channel}')
-    else:
-        await ctx.send("You are not connected to a voice channel.")
-#leave voice channel
+async def join_voice(ctx):
+    await voice_channel.join(ctx)
 @bot.command()
-async def leave(ctx):
-    if ctx.voice_client:
-        await ctx.guild.voice_client.disconnect()
-        In_voice = False
-        await ctx.send("Disconnected from the voice channel.")
-    else:
-        await ctx.send("I am not in a voice channel.")
+async def leave_voice(ctx):
+    await voice_channel.leave(ctx)'''
 
 #---------------------------------In development----------------------
-
-@bot.command
-async def help(message):
-    await message.channel.send('?Someone did not write the help file yet')
 
 
 
@@ -244,6 +134,13 @@ async def DEBUG_printMessageInfo(message):
     await message.channel.send(ifMention)
 
 # Start the bot
-llm = init_llm()
-speech2text, tts = init_speech_services()
-bot.run(TOKEN)
+llm_provider = get_config("LLM_PROVIDER")
+llm_config = get_config(llm_provider, {})
+system_prompt = get_config("SYSTEM_PROMPT")
+llm_info = [llm_provider, llm_config, system_prompt]
+#speech2text, tts = init_speech_services()
+intents = discord.Intents.default()
+intents.messages = True
+intents.message_content = True
+client = fairy.Fairy(testchannel = get_config("TESTCHANNEL"), llm_info = llm_info, intents=intents)
+client.run(TOKEN)

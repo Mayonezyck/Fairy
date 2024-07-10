@@ -31,6 +31,7 @@ class LLMFactory:
 
             )
         elif llm_provider == "memgpt":
+            #print(kwargs)
             return MemGPTLLM(
                 base_url=kwargs.get("BASE_URL"),
                 server_admin_token=kwargs.get("ADMIN_TOKEN"),
