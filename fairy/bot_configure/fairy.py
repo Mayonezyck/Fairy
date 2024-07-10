@@ -91,6 +91,7 @@ class Fairy(discord.Client):
                 #print('...')
                 #await message.channel.typing()
         #await message.channel.typing()
+            await message.channel.typing()
             await message.reply(self.temp)
             self.coolDown()
 
@@ -100,8 +101,9 @@ class Fairy(discord.Client):
     def askLLM(self, message):
         cleaned_message = re.sub(r'<@!?[0-9]+>', '', message.content).strip()
         #await message.channel.send(f'{self.isThinking, self.temp}')
-
-        self.temp = self.llm.chat(cleaned_message)
+        author = message.author
+        wrapped_message = f'{author}:{cleaned_message}'
+        self.temp = self.llm.chat(wrapped_message)
         self.isThinking = False
         #time.sleep(2)
         #self.temp = None
