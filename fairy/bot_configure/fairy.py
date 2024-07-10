@@ -1,6 +1,7 @@
 import discord
 import re
 import time
+import datetime
 from discord.ext import commands
 from discord.ext import tasks
 from llm.llm_factory import LLMFactory
@@ -15,12 +16,13 @@ class Fairy(discord.Client):
         super().__init__(*args, **kwargs)
         # an attribute we can access from our task
         self.testchannel = testchannel
-        self.counter = 0
         self.llmConnected = self.init_agent(llm_info)
         self.audio_out_enabled = False
         self.temp = None
         self.isThinking = False
         self.executor = ThreadPoolExecutor()
+        self.freeChat = False
+        self.freeChatChannel = None
 
 
     def init_agent(self,llm_info):
@@ -33,13 +35,25 @@ class Fairy(discord.Client):
             return False
 
     def shouldIgnore(self, ctx):
-        if ctx.author == self.user or ctx.channel.id != self.testchannel:
+        if ctx.author == self.user :
+            return True
+        if ctx.channel != self.freeChatChannel and ctx.channel.id != self.testchannel:
             return True
         return False
+
 
     def coolDown(self):
         self.temp = None
         self.isThinking = False
+
+    def checkCommand(self, message):
+        cleaned_message = re.sub(r'<@!?[0-9]+>', '', message.content).strip()
+        if(cleaned_message[0] == '!'):
+            print(cleaned_message[1:7])
+            if cleaned_message[1:7] == 'enable':
+                self.enableFreeChat(message.channel)
+                return True
+        return False
 
     async def on_ready(self):
         print(f'Logged in as {self.user} (ID: {self.user.id})')
@@ -51,18 +65,31 @@ class Fairy(discord.Client):
         response = f"Bot was mentioned! Message: {cleaned_message}"
         return response
 
+    def enableFreeChat(self, channel):
+        self.freeChatChannel = channel
+        self.freeChat = True
+
+    def disableFreeChat(self):
+        self.freeChatChannel = None
+        self.freeChat = False
+
     async def typeToOutput(self, message):
-        if (not self.llmConnected) or self.isThinking:
-            response = self.justEcho(message)
+        if not self.llmConnected:
+            response = 'Bro, you need to check the LLM module, why there\'s no error??'
+            await message.channel.send(response)
+        elif self.isThinking:
+            response = 'Sorry I am busy right now. I will come back to you later <3'
             await message.channel.send(response)
         else:
             #await self.askLLM(message)
+            await message.channel.typing()
             await self.run_in_executor(message)
-            while self.isThinking:
-                print('...')
-                await message.channel.typing()
+            #while self.isThinking:
+                #print('...')
+                #await message.channel.typing()
         #await message.channel.typing()
             await message.channel.send(self.temp)
+            self.coolDown()
 
     async def sayToOutput(self, message):
         pass #TODO-WASS
@@ -75,7 +102,6 @@ class Fairy(discord.Client):
         self.isThinking = False
         #time.sleep(2)
         #self.temp = None
-
 
     async def run_in_executor(self, message):
         self.isThinking = True
@@ -90,8 +116,10 @@ class Fairy(discord.Client):
             await self.typeToOutput(message)
 
     async def on_mentioned(self, message):
-        await self.chat(message)
-        # if In_Voice:
+        if not self.checkCommand(message):
+            await self.chat(message)
+
+                # if In_Voice:
         #     if message.author.voice:
         #         voice_channel = message.author.voice.channel
         #         await getResponse_audio(llm, voice_channel, cleaned_message)
@@ -107,6 +135,9 @@ class Fairy(discord.Client):
         #await DEBUG_printMessageInfo(message)
         if self.user.mentioned_in(message):
             await self.on_mentioned(message)
+        if self.freeChat and message.channel == self.freeChatChannel:
+            await self.chat(message)
+
         #await commands.Bot.process_commands(message)
 
     #-----------------------------Tested Commands----------------------
@@ -114,8 +145,7 @@ class Fairy(discord.Client):
     @tasks.loop(seconds=60)  # task runs every 60 seconds
     async def my_background_task(self):
         channel = self.get_channel(self.testchannel)   # channel ID goes here
-        self.counter += 1
-        await channel.send(self.counter)
+        await channel.send(datetime.datetime.now())
 
     @my_background_task.before_loop
     async def before_my_task(self):
