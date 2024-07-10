@@ -79,10 +79,10 @@ class Fairy(discord.Client):
     async def typeToOutput(self, message):
         if not self.llmConnected:
             response = 'Bro, you need to check the LLM module, why there\'s no error??'
-            await message.channel.send(response)
+            await message.reply(response)
         elif self.isThinking:
-            response = 'Sorry I am busy right now. I will come back to you later <3'
-            await message.channel.send(response)
+            response = f'Sorry, {message.author} I am busy right now. I will come back to you later <3'
+            await message.reply(response)
         else:
             #await self.askLLM(message)
             await message.channel.typing()
@@ -91,7 +91,7 @@ class Fairy(discord.Client):
                 #print('...')
                 #await message.channel.typing()
         #await message.channel.typing()
-            await message.channel.send(self.temp)
+            await message.reply(self.temp)
             self.coolDown()
 
     async def sayToOutput(self, message):
