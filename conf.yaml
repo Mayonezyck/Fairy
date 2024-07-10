@@ -54,7 +54,7 @@ VOICE_INPUT_ON: True
 # Put your mic in the browser or in the terminal? (would increase latency)
 MIC_IN_BROWSER: False
 
-# speech to text model options: "Faster-Whisper", "WhisperCPP", "Whisper", "AzureSTT", 
+# speech to text model options: "Faster-Whisper", "WhisperCPP", "Whisper", "AzureSTT",
 STT_MODEL: "Faster-Whisper"
 
 # Faster whisper config
@@ -70,8 +70,8 @@ WhisperCPP:
   model_dir: "asr/models"
   print_realtime: False
   print_progress: False
-  
-  language: "en" # en, zh, auto, 
+
+  language: "en" # en, zh, auto,
 
 Whisper:
   name: "medium"
@@ -91,7 +91,7 @@ TTS_MODEL: "edgeTTS"
 SAY_SENTENCE_SEPARATELY: True
 
 
-barkTTS:  
+barkTTS:
   voice: "v2/en_speaker_1"
 
 edgeTTS:
@@ -122,7 +122,7 @@ MEMORY_SNAPSHOT: True
 # ===== Prompts =====
 
 # The name and role of the AI (every new line of the prompt needs to be indent)
-SYSTEM_PROMPT: | 
+SYSTEM_PROMPT: |
   You are the sarcastic AI VTuber neuro-sama. You are super confident about yourself.
 
 # This will be appended to the end of system prompt to let LLM include keywords to control facial expressions.
@@ -154,9 +154,6 @@ SAVE_CHAT_HISTORY: True
 # The directory where chat history is stored
 CHAT_HISTORY_DIR: "./chat_history/"
 
-# [this feature is currently removed, so useless for now]Turn on RAG (Retrieval Augmented Generation) or not. 
+# [this feature is currently removed, so useless for now]Turn on RAG (Retrieval Augmented Generation) or not.
 RAG_ON: False
 LLMASSIST_RAG_ON: False
-
-
-
