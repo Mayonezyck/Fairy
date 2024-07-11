@@ -62,11 +62,12 @@ class Fairy(discord.Client):
                 return True
             elif cleaned_message[1:5] == 'join':
                 self.voiceClient = await voice_channel.join(message)
+                await voice_channel.playTest(self.voiceClient, message)
                 return True
             elif cleaned_message[1:6] == 'leave':
                 #this is so dumb but I am dumb so..
                 if await voice_channel.leave(self.voiceClient, message):
-                    self.voiceClient = None                
+                    self.voiceClient = None
                 return True
         return False
 

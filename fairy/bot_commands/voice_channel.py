@@ -21,6 +21,16 @@ async def leave(vc, ctx):
         await ctx.channel.send("I am not in a voice channel.")
         return False
 
+async def playTest(vc, ctx):
+    import discord
+    if vc:
+        # Play the local file test.mp3
+        source = discord.FFmpegPCMAudio('test.mp3')
+        vc.play(source)
+        await ctx.channel.send("Playing test.mp3")
+    else:
+        await ctx.channel.send("You are not connected to a voice channel.")
+
 #stream audio
 '''def stream_audio_file(vc, sentence, filename):
     """
