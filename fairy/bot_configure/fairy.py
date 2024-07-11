@@ -61,15 +61,24 @@ class Fairy(discord.Client):
                 self.disableFreeChat()
                 return True
             elif cleaned_message[1:5] == 'join':
+                self.audio_out_enabled = True
                 self.voiceClient = await voice_channel.join(message)
-                await voice_channel.playTest(self.voiceClient, message)
+                #await voice_channel.playTest(self.voiceClient, message)
                 return True
             elif cleaned_message[1:6] == 'leave':
-                #this is so dumb but I am dumb so..
+                self.audio_out_enabled = False
                 if await voice_channel.leave(self.voiceClient, message):
                     self.voiceClient = None
                 return True
+            elif cleaned_message[1:6] == 'test':
+                await self.text_to_speech_all('test',message)
+                return True
+
         return False
+    async def text_to_speech_all(self,text,message):
+        temp_path = await voice_channel.text_to_speech(text)
+        await voice_channel.playAudio(self.voiceClient,temp_path,message)
+        await voice_channel.after_play(self.voiceClient, temp_path)
 
     def checkTextOnly(self, message):
         if message.attachments or message.embeds or message.stickers:
@@ -115,7 +124,27 @@ class Fairy(discord.Client):
             self.coolDown()
 
     async def sayToOutput(self, message):
-        pass #TODO-WASS
+        if not self.llmConnected:
+            response = 'Bro, you need to check the LLM module, why there\'s no error??'
+            await message.reply(response)
+            await self.text_to_speech_all(response,message)
+
+        elif self.isThinking:
+            response = f'Sorry, {message.author} I am busy right now. I will come back to you later <3'
+            await message.reply(response)
+            await self.text_to_speech_all(response,message)
+        else:
+            #await self.askLLM(message)
+            await message.channel.typing()
+            await self.run_in_executor(message)
+            #while self.isThinking:
+                #print('...')
+                #await message.channel.typing()
+        #await message.channel.typing()
+            await message.channel.typing()
+            await message.reply(self.temp)
+            await self.text_to_speech_all(self.temp,message)
+            self.coolDown()
 
     def askLLM(self, message):
         cleaned_message = re.sub(r'<@!?[0-9]+>', '', message.content).strip()

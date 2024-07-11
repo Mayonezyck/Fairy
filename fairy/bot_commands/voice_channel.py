@@ -1,4 +1,6 @@
 #join voice channel
+import azure.cognitiveservices.speech as speechsdk
+import os
 async def join(ctx):
     if ctx.author.voice:
         channel = ctx.author.voice.channel
@@ -21,15 +23,46 @@ async def leave(vc, ctx):
         await ctx.channel.send("I am not in a voice channel.")
         return False
 
-async def playTest(vc, ctx):
+async def playAudio(vc, audioPath ,ctx):
     import discord
     if vc:
         # Play the local file test.mp3
-        source = discord.FFmpegPCMAudio('test.mp3')
+        source = discord.FFmpegPCMAudio(audioPath)
         vc.play(source)
-        await ctx.channel.send("Playing test.mp3")
+        await ctx.channel.send(f"Playing {audioPath}")
     else:
         await ctx.channel.send("You are not connected to a voice channel.")
+
+async def text_to_speech(text):
+    speech_key = "01d8f92bbf8c460a9d65ea412fbf3e4f"
+    service_region = "westus2"
+    speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
+    speech_config.speech_synthesis_voice_name = "zh-CN-XiaoxiaoNeural"
+
+    temp_dir = ".temp"
+    if not os.path.exists(temp_dir):
+        os.makedirs(temp_dir)
+
+    temp_audio_file_name = os.path.join(temp_dir, "temp_audio.mp3")
+    audio_config = speechsdk.audio.AudioOutputConfig(filename=temp_audio_file_name)
+    synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config, audio_config=audio_config)
+    result = synthesizer.speak_text_async(text).get()
+    if result.reason == speechsdk.ResultReason.SynthesizingAudioCompleted:
+        return temp_audio_file_name
+    else:
+        raise Exception("Speech synthesis failed")
+
+async def after_play(vc, filename):
+    while vc.is_playing():
+        pass
+    if os.path.exists(filename):
+        os.remove(filename)
+        print(f'Temporary file {filename} deleted.')
+
+
+
+if __name__ == "__main__":
+    print(text_to_speech('hello world'))
 
 #stream audio
 '''def stream_audio_file(vc, sentence, filename):

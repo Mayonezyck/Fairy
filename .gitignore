@@ -18,3 +18,4 @@ cache/*
 asr/models*
 !asr/models/silero_vad.onnx
 secret.yaml
+.temp/
