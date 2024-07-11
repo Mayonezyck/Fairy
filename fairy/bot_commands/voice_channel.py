@@ -3,19 +3,23 @@ async def join(ctx):
     if ctx.author.voice:
         channel = ctx.author.voice.channel
         In_Voice = True
-        await channel.connect()
-        await ctx.send(f'Joined {channel}')
+        voice_client = await channel.connect()
+        await ctx.channel.send(f'Joined {channel}')
+        return voice_client
     else:
-        await ctx.send("You are not connected to a voice channel.")
+        await ctx.channel.send("You are not connected to a voice channel.")
+        return None
 
 #leave voice channel
-async def leave(ctx):
-    if ctx.voice_client:
-        await ctx.guild.voice_client.disconnect()
+async def leave(vc, ctx):
+    if vc:
+        await vc.disconnect()
         In_voice = False
-        await ctx.send("Disconnected from the voice channel.")
+        await ctx.channel.send("Disconnected from the voice channel.")
+        return True
     else:
-        await ctx.send("I am not in a voice channel.")
+        await ctx.channel.send("I am not in a voice channel.")
+        return False
 
 #stream audio
 '''def stream_audio_file(vc, sentence, filename):

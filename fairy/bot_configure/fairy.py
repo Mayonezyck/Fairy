@@ -23,6 +23,7 @@ class Fairy(discord.Client):
         self.executor = ThreadPoolExecutor()
         self.freeChat = False
         self.freeChatChannel = None
+        self.voiceClient = None
 
 
     def init_agent(self,llm_info):
@@ -60,8 +61,13 @@ class Fairy(discord.Client):
                 self.disableFreeChat()
                 return True
             elif cleaned_message[1:5] == 'join':
-                await voice_channel.join(message)
-                return
+                self.voiceClient = await voice_channel.join(message)
+                return True
+            elif cleaned_message[1:6] == 'leave':
+                #this is so dumb but I am dumb so..
+                if await voice_channel.leave(self.voiceClient, message):
+                    self.voiceClient = None                
+                return True
         return False
 
     def checkTextOnly(self, message):
