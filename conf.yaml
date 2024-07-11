@@ -106,8 +106,9 @@ edgeTTS:
 #  ===== Discord Bot Settings =====
 
 TESTCHANNEL: 1260450089239838804
-
-
+SPEECH_KEY: "01d8f92bbf8c460a9d65ea412fbf3e4f"
+SERVICE_REGION: "westus2"
+VOICE_NAME: "zh-CN-XiaoxiaoNeural"
 
 #  ===== Other Settings =====
 

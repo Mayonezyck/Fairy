@@ -33,12 +33,9 @@ async def playAudio(vc, audioPath ,ctx):
     else:
         await ctx.channel.send("You are not connected to a voice channel.")
 
-async def text_to_speech(text):
-    speech_key = "01d8f92bbf8c460a9d65ea412fbf3e4f"
-    service_region = "westus2"
+async def text_to_speech(text,speech_key,service_region, voice_name):
     speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
-    speech_config.speech_synthesis_voice_name = "zh-CN-XiaoxiaoNeural"
-
+    speech_config.speech_synthesis_voice_name = voice_name
     temp_dir = ".temp"
     if not os.path.exists(temp_dir):
         os.makedirs(temp_dir)

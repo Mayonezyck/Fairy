@@ -12,11 +12,14 @@ from concurrent.futures import ThreadPoolExecutor
 
 
 class Fairy(discord.Client):
-    def __init__(self, testchannel, llm_info, *args, **kwargs):
+    def __init__(self, testchannel, llm_info, tts_info, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # an attribute we can access from our task
         self.testchannel = testchannel
         self.llmConnected = self.init_agent(llm_info)
+        self.speech_key = tts_info[0]
+        self.service_region = tts_info[1]
+        self.voice_name = tts_info[2]
         self.audio_out_enabled = False
         self.temp = None
         self.isThinking = False
@@ -76,7 +79,7 @@ class Fairy(discord.Client):
 
         return False
     async def text_to_speech_all(self,text,message):
-        temp_path = await voice_channel.text_to_speech(text)
+        temp_path = await voice_channel.text_to_speech(text, self.speech_key, self.service_region, self.voice_name)
         await voice_channel.playAudio(self.voiceClient,temp_path,message)
         await voice_channel.after_play(self.voiceClient, temp_path)
 
@@ -150,7 +153,7 @@ class Fairy(discord.Client):
         cleaned_message = re.sub(r'<@!?[0-9]+>', '', message.content).strip()
         #await message.channel.send(f'{self.isThinking, self.temp}')
         author = message.author
-        wrapped_message = f'{author}:{cleaned_message}'
+        wrapped_message = f'{author}: {cleaned_message}'
         self.temp = self.llm.chat(wrapped_message)
         self.isThinking = False
         #time.sleep(2)

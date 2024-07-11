@@ -34,50 +34,6 @@ live2d = None
 #-----------------------------Init---------------------------------
 
 
-
-
-
-
-
-'''def init_speech_services():
-    voice_input_on = get_config("VOICE_INPUT_ON", False)
-    tts_on = get_config("TTS_ON", False)
-    speech2text, tts = None, None
-
-    if voice_input_on:
-        asr_model = get_config("STT_MODEL")
-
-        asr_config = {}
-
-        if asr_model == "AzureSTT":
-            import api_keys
-            asr_config = {
-                "callback": print,
-                "subscription_key": api_keys.AZURE_API_Key,
-                "region": api_keys.AZURE_REGION,
-            }
-        else:
-            asr_config = get_config(asr_model, {})
-
-        speech2text = ASRFactory.get_asr_system(asr_model, **asr_config)
-
-    if tts_on:
-        tts_model = get_config("TTS_MODEL", "pyttsx3TTS")
-
-        if tts_model == "AzureTTS":
-            import api_keys
-            tts_config = {
-                "api_key": api_keys.AZURE_API_Key,
-                "region": api_keys.AZURE_REGION,
-                "voice": api_keys.AZURE_VOICE,
-            }
-        else:
-            tts_config = get_config(tts_model, {})
-
-        tts = TTSFactory.get_tts_engine(tts_model, **tts_config)
-
-    return speech2text, tts'''
-
 #-----------------------------Helper--------------------------------
 async def getResponse(thisllm, user_input):
     print('Thinking...')
@@ -111,36 +67,23 @@ async def mentioned_function(message):
 
 #------------------------------Tested Events-----------------------
 # Event that triggers when the bot is ready
-
 #-----------------------------Tested Commands----------------------
-'''
-@bot.command()
-async def join_voice(ctx):
-    await voice_channel.join(ctx)
-@bot.command()
-async def leave_voice(ctx):
-    await voice_channel.leave(ctx)'''
-
 #---------------------------------In development----------------------
 
 
 
 #-----------------------------DEBUG ONLY----------------------------
-async def DEBUG_printMessageInfo(message):
-    line1 = f'MESSAGEAUTHOR:{message.author},BOTUSER{bot.user}'
-    await message.channel.send(line1)
 
-    ifMention = f'BOT MENTIONED?{bot.user.mentioned_in(message)} MESSAGE_MENTIONS:{message.mentions}'
-    await message.channel.send(ifMention)
 
 # Start the bot
 llm_provider = get_config("LLM_PROVIDER")
 llm_config = get_config(llm_provider, {})
 system_prompt = get_config("SYSTEM_PROMPT")
 llm_info = [llm_provider, llm_config, system_prompt]
+tts_info = [get_config("SPEECH_KEY"),get_config("SERVICE_REGION"),get_config("VOICE_NAME")]
 #speech2text, tts = init_speech_services()
 intents = discord.Intents.default()
 intents.messages = True
 intents.message_content = True
-client = fairy.Fairy(testchannel = get_config("TESTCHANNEL"), llm_info = llm_info, intents=intents)
+client = fairy.Fairy(testchannel = get_config("TESTCHANNEL"), llm_info = llm_info, tts_info = tts_info, intents=intents)
 client.run(TOKEN)
